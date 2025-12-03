@@ -1,98 +1,113 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useAuth } from '@/contexts/auth-context';
+import { useSession } from '@/hooks/use-session';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { user, logout } = useAuth();
+  const { isLoading } = useSession();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <View style={styles.content}>
+        <ThemedText type="title" style={styles.title}>Welcome!</ThemedText>
+        
+        {isLoading ? (
+          <ActivityIndicator size="large" />
+        ) : (
+          <>
+            <ThemedText style={styles.greeting}>
+              Hello, {user?.name || 'User'}!
+            </ThemedText>
+            
+            <View style={styles.infoCard}>
+              <ThemedText style={styles.infoLabel}>Email:</ThemedText>
+              <ThemedText style={styles.infoValue}>{user?.email || 'N/A'}</ThemedText>
+            </View>
+
+            <View style={styles.infoCard}>
+              <ThemedText style={styles.infoLabel}>User ID:</ThemedText>
+              <ThemedText style={styles.infoValue}>{user?.id || 'N/A'}</ThemedText>
+            </View>
+
+            <View style={styles.section}>
+              <ThemedText style={styles.sectionTitle}>Authentication Status</ThemedText>
+              <ThemedText style={styles.statusText}>✓ Authenticated</ThemedText>
+              <ThemedText style={styles.statusText}>✓ Token stored in SecureStore</ThemedText>
+              <ThemedText style={styles.statusText}>✓ Session cached with React Query</ThemedText>
+            </View>
+
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <ThemedText style={styles.logoutButtonText}>Logout</ThemedText>
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 20,
+  },
+  title: {
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  greeting: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  infoCard: {
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+    padding: 15,
+    borderRadius: 8,
+    gap: 5,
+  },
+  infoLabel: {
+    fontSize: 14,
+    opacity: 0.7,
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  section: {
+    marginTop: 20,
+    gap: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  statusText: {
+    fontSize: 16,
+    opacity: 0.8,
+  },
+  logoutButton: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 8,
+    padding: 15,
     alignItems: 'center',
-    gap: 8,
+    marginTop: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
