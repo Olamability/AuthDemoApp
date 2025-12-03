@@ -3,7 +3,7 @@ import { Slot, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/contexts/auth-context';
@@ -23,7 +23,6 @@ function RootLayoutNav() {
   const { token, isHydrated } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  const [isNavigationReady, setIsNavigationReady] = useState(false);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -31,22 +30,17 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === '(auth)';
     const inTabsGroup = segments[0] === '(tabs)';
 
-    // Wait a bit for navigation to be ready
-    setTimeout(() => {
-      setIsNavigationReady(true);
-      
-      if (token && !inTabsGroup) {
-        // User is authenticated but not in tabs, redirect to home
-        router.replace('/(tabs)');
-      } else if (!token && !inAuthGroup) {
-        // User is not authenticated and not in auth group, redirect to welcome
-        router.replace('/(auth)/welcome');
-      }
-    }, 100);
+    if (token && !inTabsGroup) {
+      // User is authenticated but not in tabs, redirect to home
+      router.replace('/(tabs)');
+    } else if (!token && !inAuthGroup) {
+      // User is not authenticated and not in auth group, redirect to welcome
+      router.replace('/(auth)/welcome');
+    }
   }, [token, isHydrated, segments, router]);
 
-  // Show splash screen while hydrating or navigating
-  if (!isHydrated || !isNavigationReady) {
+  // Show splash screen while hydrating
+  if (!isHydrated) {
     return <SplashScreen />;
   }
 

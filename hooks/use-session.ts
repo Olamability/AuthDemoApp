@@ -8,7 +8,12 @@ export function useSession() {
 
   const query = useQuery<User>({
     queryKey: ['session', token],
-    queryFn: () => getUserSession(token!),
+    queryFn: () => {
+      if (!token) {
+        throw new Error('No token available');
+      }
+      return getUserSession(token);
+    },
     enabled: !!token,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

@@ -12,19 +12,23 @@ export const tokenStorage = {
     }
   },
 
-  async setToken(token: string): Promise<void> {
+  async setToken(token: string): Promise<boolean> {
     try {
       await SecureStore.setItemAsync(TOKEN_KEY, token);
+      return true;
     } catch (error) {
       console.error('Error setting token:', error);
+      throw error;
     }
   },
 
-  async removeToken(): Promise<void> {
+  async removeToken(): Promise<boolean> {
     try {
       await SecureStore.deleteItemAsync(TOKEN_KEY);
+      return true;
     } catch (error) {
       console.error('Error removing token:', error);
+      throw error;
     }
   },
 };
